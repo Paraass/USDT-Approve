@@ -90,35 +90,35 @@ mtk-approve/
 ## 💡 How the Approve Mechanism Works
 
 ```
-Alice (token owner)
+Rohan (token owner)
     ↓
-approve(DEX, 50 USDT)       ← sets permission on blockchain
+approve(rahul, 50 USDT)       ← sets permission on blockchain
     ↓
-DEX calls transferFrom()    ← uses the permission to move tokens
+Rahul calls transferFrom()    ← uses the permission to move tokens
     ↓
 Allowance reduced by 500    ← prevents overspending
 ```
 
-The `approve()` function does not move tokens. It only writes a permission into blockchain state. The actual movement happens later via `transferFrom()`.
+The `approve()` function does not move tokens. It only writes a permission into the blockchain state. The actual movement happens later via `transferFrom()`.
 
 ---
 
 ## 🔧 Tech Stack
 
-- **Solidity** `^0.8.20` — Smart contract language
-- **Remix IDE** — Development and deployment environment
-- **Ethers.js** `v5.7.2` — Blockchain interaction in frontend
-- **Trust Wallet** — Mobile wallet for testing (WalletConnect)
-- **MetaMask** — Browser wallet
-- **GitHub Pages** — Frontend hosting
-- **Ethereum Mainnet** — Live blockchain deployment
+- **Solidity** `^0.8.20` - Smart contract language
+- **Remix IDE** - Development and deployment environment
+- **Ethers.js** `v5.7.2` - Blockchain interaction in frontend
+- **Trust Wallet** - Mobile wallet for testing (WalletConnect)
+- **MetaMask** - Browser wallet
+- **GitHub Pages** - Frontend hosting
+- **Ethereum Mainnet** - Live blockchain deployment
 
 ---
 
 ## 👤 Author
 
 **Paras Aggarwal**  
-Final Year B.Tech — Computer Science, Chandigarh University  
+Final Year B.Tech - Computer Science, Chandigarh University  
 Freelance Blockchain Developer
 
 ---
