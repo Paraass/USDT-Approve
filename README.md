@@ -17,11 +17,11 @@
 
 ## 📌 Project Overview
 
-This project was built for a real client who needed a working ERC-20 token deployment with a frontend DApp that allows users to approve token spending via Trust Wallet.
+This project was built for a real client who needed a working ERC-20 token deployment with a frontend DApp that allows users to approve token spending via Metamask Wallet.
 
 **The complete flow:**
 ```
-Smart Contract Deployed → QR Code Generated → User Scans with Trust Wallet → Approve/Deny Popup
+Smart Contract Deployed → QR Code Generated → User Scans with Metamask Wallet → Approve/Deny Popup
 ```
 
 ---
@@ -33,11 +33,11 @@ Smart Contract Deployed → QR Code Generated → User Scans with Trust Wallet �
 - Includes `approve()`, `transferFrom()`, `transfer()`, `balanceOf()`, `allowance()`
 - Emits `Transfer` and `Approval` events
 - 1,000,000 MTK minted to deployer on launch
-- Deployed on Ethereum Mainnet via Remix IDE + Trust Wallet (WalletConnect)
+- Deployed on Ethereum Mainnet via Remix IDE + Metmask Wallet (WalletConnect)
 
 ### 2. Frontend DApp - `approve-dapp.html`
 - Single-file HTML/CSS/JS DApp
-- Connects to MetaMask and Trust Wallet via `window.ethereum`
+- Connects to MetaMask Wallet via `window.ethereum`
 - Calls the `approve()` function on the deployed contract
 - Shows real-time transaction status and Etherscan link on success
 - Hosted on GitHub Pages
@@ -108,7 +108,7 @@ The `approve()` function does not move tokens. It only writes a permission into 
 - **Solidity** `^0.8.20` - Smart contract language
 - **Remix IDE** - Development and deployment environment
 - **Ethers.js** `v5.7.2` - Blockchain interaction in frontend
-- **Trust Wallet** - Mobile wallet for testing (WalletConnect)
+- **Metamask Wallet** - Mobile wallet for testing (WalletConnect)
 - **MetaMask** - Browser wallet
 - **GitHub Pages** - Frontend hosting
 - **Ethereum Mainnet** - Live blockchain deployment
