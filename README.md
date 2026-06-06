@@ -118,7 +118,7 @@ The `approve()` function does not move tokens. It only writes a permission into 
 ## 👤 Author
 
 **Paras Aggarwal**  
-Final Year B.Tech - Computer Science, Chandigarh University  
+B.Tech Graduate - Computer Science 
 Freelance Blockchain Developer
 
 ---
