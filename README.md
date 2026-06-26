@@ -5,7 +5,7 @@
 
 ---
 
-## 🔗 Live Links
+##  Live Links
 
 | Resource | Link |
 |---|---|
@@ -15,7 +15,7 @@
 
 ---
 
-## 📌 Project Overview
+##  Project Overview
 
 This project was built for a real client who needed a working ERC-20 token deployment with a frontend DApp that allows users to approve token spending via Metamask Wallet.
 
@@ -26,7 +26,7 @@ Smart Contract Deployed → QR Code Generated → User Scans with Metamask Walle
 
 ---
 
-## 🛠️ What Was Built
+##  What Was Built
 
 ### 1. Smart Contract - `MyToken.sol`
 - Full ERC-20 standard implementation written in Solidity
@@ -49,7 +49,7 @@ Smart Contract Deployed → QR Code Generated → User Scans with Metamask Walle
 
 ---
 
-## 🔐 Smart Contract Details
+##  Smart Contract Details
 
 | Property | Value |
 |---|---|
@@ -64,7 +64,7 @@ Smart Contract Deployed → QR Code Generated → User Scans with Metamask Walle
 
 ---
 
-## 📁 Repository Structure
+##  Repository Structure
 
 ```
 mtk-approve/
@@ -75,7 +75,7 @@ mtk-approve/
 
 ---
 
-## 🚀 How to Deploy (for reference)
+##  How to Deploy (for reference)
 
 1. Open [remix.ethereum.org](https://remix.ethereum.org)
 2. Paste `MyToken.sol`
@@ -87,7 +87,7 @@ mtk-approve/
 
 ---
 
-## 💡 How the Approve Mechanism Works
+##  How the Approve Mechanism Works
 
 ```
 Rohan (token owner)
@@ -103,7 +103,7 @@ The `approve()` function does not move tokens. It only writes a permission into 
 
 ---
 
-## 🔧 Tech Stack
+##  Tech Stack
 
 - **Solidity** `^0.8.20` - Smart contract language
 - **Remix IDE** - Development and deployment environment
@@ -115,7 +115,7 @@ The `approve()` function does not move tokens. It only writes a permission into 
 
 ---
 
-## 👤 Author
+##  Author
 
 **Paras Aggarwal**  
 B.Tech Graduate - Computer Science 
