@@ -45,6 +45,13 @@
     .input.invalid{border-color:var(--danger);box-shadow:0 0 0 4px rgba(255,107,122,.10)}
     .input.valid{border-color:var(--success);box-shadow:0 0 0 4px rgba(53,211,153,.08)}
 
+    .amount-input-wrap{padding:0 15px}
+    .amount-input{min-width:0;flex:1;width:100%;border:0;outline:0;background:transparent;color:var(--text);
+      font:700 28px/1.2 inherit;padding:0}
+    .amount-input:focus{outline:none}
+    .amount-input::-webkit-inner-spin-button,.amount-input::-webkit-outer-spin-button{opacity:.65}
+    .amount-input.invalid{color:#ffc0c7}
+    .amount-input.valid{color:var(--text)}
     .input{width:100%;height:54px;border:1px solid var(--border);border-radius:14px;background:#0d1017;
       color:var(--text);padding:0 15px;outline:none;transition:.18s}
     .input:focus{border-color:#6470ee;box-shadow:0 0 0 4px rgba(88,101,242,.12)}
@@ -76,6 +83,21 @@
     .stepno{width:25px;height:25px;border-radius:50%;background:#1a1e2a;border:1px solid var(--border);
       display:grid;place-items:center;font-size:11px;color:#aeb5c4;flex:none}
     .step strong{display:block;font-size:12px;margin-bottom:4px}.step p{margin:0;color:var(--muted);font-size:11px;line-height:1.45}
+
+    .review-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.72);display:grid;place-items:center;
+      padding:20px;z-index:1000}
+    .review-backdrop[hidden]{display:none}
+    .review-card{width:min(560px,100%);background:#11141c;border:1px solid var(--border);border-radius:22px;
+      padding:24px;box-shadow:0 30px 100px rgba(0,0,0,.55)}
+    .review-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:18px}
+    .review-head h2{margin:0}
+    .review-close{border:1px solid var(--border);background:#171a24;color:#cbd0db;border-radius:10px;
+      width:38px;height:38px;font-size:24px;cursor:pointer}
+    .review-row{display:flex;justify-content:space-between;gap:20px;padding:16px 0;border-bottom:1px solid var(--border)}
+    .review-row span{color:var(--muted);font-size:12px}
+    .review-row strong{font-family:"SFMono-Regular",Consolas,monospace;font-size:12px;text-align:right;word-break:break-all}
+    .review-warning{margin:20px 0;padding:14px;border:1px solid #343a4a;background:#151923;border-radius:14px;
+      color:#aeb5c4;font-size:12px;line-height:1.5}
     .footer{margin-top:25px;color:#666d7c;font-size:11px;text-align:center}
     @media(max-width:860px){.grid{grid-template-columns:1fr}.side{order:2}header{margin-bottom:48px}}
     @media(max-width:560px){.shell{padding:20px 14px 35px}.main,.side{padding:20px;border-radius:20px}
@@ -187,6 +209,24 @@
     <div class="footer">Ethereum Mainnet · USDT contract interface</div>
   </div>
 
+
+    <div id="reviewDialog" class="review-backdrop" hidden>
+      <div class="review-card" role="dialog" aria-modal="true" aria-labelledby="reviewTitle">
+        <div class="review-head">
+          <div>
+            <div class="eyebrow">Approval review</div>
+            <h2 id="reviewTitle">Review transaction details</h2>
+          </div>
+          <button class="review-close" id="reviewClose" type="button" aria-label="Close">×</button>
+        </div>
+        <div class="review-row"><span>Spender</span><strong id="reviewSpender">—</strong></div>
+        <div class="review-row"><span>Amount</span><strong id="reviewAmount">—</strong></div>
+        <div class="review-warning">
+          Live Mainnet approval is not enabled in this build. This review confirms exactly what would be requested without submitting a transaction.
+        </div>
+        <button class="btn" id="reviewDone" type="button">Close review</button>
+      </div>
+    </div>
   <script>
     const CONTRACT_ADDRESS = "0xdAC17F958D2ee523a2206206994597C13D831ec7";
     const ABI = [
@@ -244,44 +284,61 @@
     const MAX_APPROVAL = 50;
     const amountInput = document.getElementById("amountInput");
     const approveBtn = document.getElementById("approveBtn");
+    const reviewDialog = document.getElementById("reviewDialog");
+    const reviewSpender = document.getElementById("reviewSpender");
+    const reviewAmount = document.getElementById("reviewAmount");
 
-    function validateAmount() {
+    function validAmount() {
       const raw = amountInput.value.trim();
       const amount = Number(raw);
-
-      if (!raw || !Number.isFinite(amount) || amount <= 0 || amount > MAX_APPROVAL) {
-        amountInput.classList.remove("valid");
-        amountInput.classList.add("invalid");
-        approveBtn.textContent = "Review approval";
-        return false;
-      }
-
-      amountInput.classList.remove("invalid");
-      amountInput.classList.add("valid");
-      approveBtn.textContent = `Review ${amountInput.value} USDT`;
-      return true;
+      return raw !== "" && Number.isFinite(amount) && amount > 0 && amount <= MAX_APPROVAL;
     }
 
-    amountInput.addEventListener("input", validateAmount);
-    amountInput.addEventListener("blur", validateAmount);
-    validateAmount();
-
-    const spenderInput = document.getElementById("spenderInput");
-    spenderInput.addEventListener("input", () => {
+    function validSpender() {
       const value = spenderInput.value.trim();
+      return value !== "" && ethers.utils.isAddress(value);
+    }
 
-      if (!value) {
-        spenderInput.classList.remove("valid", "invalid");
-        return;
-      }
+    function updateApprovalButton() {
+      const ok = validAmount() && validSpender();
+      approveBtn.disabled = !ok;
+      approveBtn.textContent = ok
+        ? `Review ${amountInput.value} USDT`
+        : "Review approval";
 
-      if (window.ethers && ethers.utils.isAddress(value)) {
-        spenderInput.classList.add("valid");
-        spenderInput.classList.remove("invalid");
+      if (amountInput.value.trim() === "") {
+        amountInput.classList.remove("valid", "invalid");
+      } else if (validAmount()) {
+        amountInput.classList.add("valid");
+        amountInput.classList.remove("invalid");
       } else {
-        spenderInput.classList.add("invalid");
-        spenderInput.classList.remove("valid");
+        amountInput.classList.add("invalid");
+        amountInput.classList.remove("valid");
       }
+    }
+
+    amountInput.addEventListener("input", updateApprovalButton);
+    spenderInput.addEventListener("input", updateApprovalButton);
+    updateApprovalButton();
+
+    approveBtn.addEventListener("click", () => {
+      if (!validAmount() || !validSpender()) return;
+
+      reviewSpender.textContent = spenderInput.value.trim();
+      reviewAmount.textContent = `${amountInput.value} USDT`;
+      reviewDialog.hidden = false;
+      document.getElementById("statusText").textContent =
+        "Approval details ready for review. No Mainnet transaction was submitted.";
+    });
+
+    function closeReview() {
+      reviewDialog.hidden = true;
+    }
+
+    document.getElementById("reviewClose").addEventListener("click", closeReview);
+    document.getElementById("reviewDone").addEventListener("click", closeReview);
+    reviewDialog.addEventListener("click", (event) => {
+      if (event.target === reviewDialog) closeReview();
     });
 
     async function copyAddress() {
