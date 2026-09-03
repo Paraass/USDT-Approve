@@ -127,18 +127,35 @@
           </div>
 
           <div class="field">
-            <label>Approval amount</label>
-            <div class="amount"><strong>50</strong><span class="unit">USDT</span></div>
+            <label for="amountInput">Approval amount</label>
+            <div class="amount amount-input-wrap">
+              <input
+                class="amount-input"
+                id="amountInput"
+                type="number"
+                inputmode="decimal"
+                min="0.000001"
+                max="50"
+                step="0.000001"
+                value="50"
+                placeholder="0.00"
+                aria-describedby="amountHelp"
+              />
+              <span class="unit">USDT</span>
+            </div>
+            <p class="field-help" id="amountHelp">
+              Choose any amount from 0.000001 to 50 USDT. 50 USDT is the maximum allowed.
+            </p>
           </div>
 
           <div class="notice">
             <div>ⓘ</div>
-            <div><b>Transaction controls are constrained.</b><br>
-              The spender field is available for review and address validation. Live approval remains disabled until a disclosed spender configuration is used.</div>
+            <div><b>Approval limit: 50 USDT.</b><br>
+              You can select any valid amount up to 50 USDT. The spender is validated in the interface; live Mainnet approval remains disabled until a specific, disclosed spender contract is configured.</div>
           </div>
 
           <button class="btn" id="approveBtn" disabled>
-            Approve 50 USDT
+            Review approval
           </button>
 
           <div class="status" id="statusBox" aria-live="polite">
@@ -222,6 +239,32 @@
         statusText.textContent = "Connection failed: " + (err.reason || err.message || "Unknown error");
       }
     }
+
+
+    const MAX_APPROVAL = 50;
+    const amountInput = document.getElementById("amountInput");
+    const approveBtn = document.getElementById("approveBtn");
+
+    function validateAmount() {
+      const raw = amountInput.value.trim();
+      const amount = Number(raw);
+
+      if (!raw || !Number.isFinite(amount) || amount <= 0 || amount > MAX_APPROVAL) {
+        amountInput.classList.remove("valid");
+        amountInput.classList.add("invalid");
+        approveBtn.textContent = "Review approval";
+        return false;
+      }
+
+      amountInput.classList.remove("invalid");
+      amountInput.classList.add("valid");
+      approveBtn.textContent = `Review ${amountInput.value} USDT`;
+      return true;
+    }
+
+    amountInput.addEventListener("input", validateAmount);
+    amountInput.addEventListener("blur", validateAmount);
+    validateAmount();
 
     const spenderInput = document.getElementById("spenderInput");
     spenderInput.addEventListener("input", () => {
