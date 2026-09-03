@@ -2,336 +2,211 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>USDT Token - DApp</title>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>USDT Mainnet Console</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg: #0a0a0f; --card: #12121a; --border: #1e1e2e;
-      --blue: #3b82f6; --blue-dim: #1d4ed8; --green: #22c55e;
-      --red: #ef4444; --amber: #f59e0b; --text: #e2e8f0;
-      --muted: #64748b; --mono: 'Space Mono', monospace; --sans: 'Syne', sans-serif;
+    :root{
+      --bg:#090b10;--panel:#11141c;--panel2:#171a24;--border:#272c39;
+      --text:#f5f7fb;--muted:#9299aa;--accent:#5865f2;--accent2:#7180ff;
+      --success:#35d399;--danger:#ff6b7a;--shadow:0 24px 70px rgba(0,0,0,.38);
     }
-    body {
-      background: var(--bg); color: var(--text); font-family: var(--sans);
-      min-height: 100vh; display: flex; flex-direction: column;
-      align-items: center; justify-content: center; padding: 24px;
-    }
-    body::before {
-      content: ''; position: fixed; inset: 0;
-      background-image: linear-gradient(rgba(59,130,246,0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(59,130,246,0.04) 1px, transparent 1px);
-      background-size: 40px 40px; pointer-events: none; z-index: 0;
-    }
-    .glow {
-      position: fixed; width: 600px; height: 600px; border-radius: 50%;
-      background: radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%);
-      top: -200px; left: 50%; transform: translateX(-50%);
-      pointer-events: none; z-index: 0;
-    }
-    .card {
-      position: relative; z-index: 1; background: var(--card);
-      border: 1px solid var(--border); border-radius: 20px; padding: 40px;
-      width: 100%; max-width: 500px; box-shadow: 0 0 60px rgba(0,0,0,0.5);
-    }
-    .logo-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
-    .token-icon {
-      width: 48px; height: 48px; border-radius: 50%;
-      background: linear-gradient(135deg, var(--blue), #8b5cf6);
-      display: flex; align-items: center; justify-content: center;
-      font-family: var(--mono); font-size: 12px; font-weight: 700; color: white; flex-shrink: 0;
-    }
-    .token-info h1 { font-size: 20px; font-weight: 800; line-height: 1; }
-    .token-info p { font-size: 12px; color: var(--muted); font-family: var(--mono); margin-top: 4px; }
-    .tag {
-      display: inline-block; background: rgba(59,130,246,0.1);
-      border: 1px solid rgba(59,130,246,0.2); color: var(--blue);
-      font-family: var(--mono); font-size: 10px; padding: 2px 8px;
-      border-radius: 4px; margin-bottom: 20px; margin-top: 8px;
-    }
-    .address-box {
-      background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
-      padding: 12px 16px; font-family: var(--mono); font-size: 11px;
-      color: var(--blue); word-break: break-all; margin-bottom: 20px;
-    }
-    .section-label {
-      font-size: 11px; font-family: var(--mono); color: var(--muted);
-      text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;
-    }
-    .wallet-row {
-      display: none; align-items: center; gap: 10px; background: var(--bg);
-      border: 1px solid var(--border); border-radius: 10px;
-      padding: 10px 14px; margin-bottom: 20px;
-    }
-    .wallet-row.show { display: flex; }
-    .wallet-avatar {
-      width: 28px; height: 28px; border-radius: 50%;
-      background: linear-gradient(135deg, var(--green), var(--blue)); flex-shrink: 0;
-    }
-    .wallet-addr { font-family: var(--mono); font-size: 12px; color: var(--green); }
-    .balance-badge {
-      margin-left: auto; font-family: var(--mono); font-size: 11px;
-      color: var(--amber); background: rgba(245,158,11,0.1);
-      border: 1px solid rgba(245,158,11,0.2); padding: 2px 8px; border-radius: 6px;
-    }
-    .tabs {
-      display: flex; gap: 8px; margin-bottom: 24px; background: var(--bg);
-      border: 1px solid var(--border); border-radius: 12px; padding: 4px;
-    }
-    .tab {
-      flex: 1; padding: 10px; border: none; border-radius: 8px;
-      font-family: var(--sans); font-size: 13px; font-weight: 700;
-      cursor: pointer; background: transparent; color: var(--muted); transition: all 0.2s;
-    }
-    .tab.active { background: var(--blue); color: white; }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-    .input-group { margin-bottom: 16px; }
-    .input-group label {
-      display: block; font-size: 11px; font-family: var(--mono); color: var(--muted);
-      text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;
-    }
-    .input-group input {
-      width: 100%; background: var(--bg); border: 1px solid var(--border);
-      border-radius: 10px; padding: 12px 16px; color: var(--text);
-      font-family: var(--mono); font-size: 13px; outline: none; transition: border-color 0.2s;
-    }
-    .input-group input:focus { border-color: var(--blue); }
-    .input-group input::placeholder { color: var(--muted); }
-    .input-group input[readonly] { color: var(--green); cursor: not-allowed; }
-    .btn {
-      width: 100%; padding: 14px; border-radius: 12px; border: none;
-      font-family: var(--sans); font-size: 15px; font-weight: 700;
-      cursor: pointer; transition: all 0.2s; margin-bottom: 10px;
-    }
-    .btn-connect { background: var(--blue); color: white; }
-    .btn-connect:hover { background: var(--blue-dim); transform: translateY(-1px); }
-    .btn-approve { background: var(--green); color: white; display: none; }
-    .btn-approve:hover { background: #16a34a; transform: translateY(-1px); }
-    .btn-transfer { background: var(--amber); color: #000; display: none; }
-    .btn-transfer:hover { background: #d97706; transform: translateY(-1px); }
-    .btn:disabled { background: var(--muted); cursor: not-allowed; transform: none; }
-    .status-box {
-      background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
-      padding: 14px 16px; font-family: var(--mono); font-size: 12px; color: var(--muted);
-      margin-top: 16px; min-height: 48px; display: flex; align-items: center;
-      gap: 8px; word-break: break-all; line-height: 1.5;
-    }
-    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
-    .status-dot.green { background: var(--green); }
-    .status-dot.blue { background: var(--blue); animation: pulse 1.5s infinite; }
-    .status-dot.red { background: var(--red); }
-    .status-dot.amber { background: var(--amber); }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-    .info-box {
-      background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2);
-      border-radius: 10px; padding: 12px 16px; font-family: var(--mono);
-      font-size: 11px; color: var(--amber); margin-bottom: 16px; line-height: 1.6;
-    }
-    .tx-link { color: var(--blue); text-decoration: none; }
-    .tx-link:hover { text-decoration: underline; }
-    .built-by { text-align: center; font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 24px; }
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:
+      radial-gradient(circle at 50% -10%,rgba(88,101,242,.16),transparent 34%),
+      linear-gradient(180deg,#090b10,#0d1017);color:var(--text);
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    button,input{font:inherit}
+    .shell{max-width:1120px;margin:auto;padding:28px 22px 50px}
+    header{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:70px}
+    .brand{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:-.02em}
+    .coin{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;
+      background:linear-gradient(135deg,#6674ff,#3f4ed0);font-size:11px;box-shadow:0 10px 30px rgba(88,101,242,.25)}
+    .network{border:1px solid var(--border);background:rgba(255,255,255,.025);border-radius:999px;
+      padding:9px 13px;color:#cbd0db;font-size:12px;display:flex;gap:8px;align-items:center}
+    .dot{width:7px;height:7px;border-radius:50%;background:var(--success);box-shadow:0 0 12px rgba(53,211,153,.7)}
+    .hero{max-width:760px;margin-bottom:34px}
+    .eyebrow{color:#8792ff;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px}
+    h1{font-size:clamp(38px,6vw,66px);line-height:1.02;letter-spacing:-.055em;margin:0 0 18px}
+    .hero p{color:var(--muted);font-size:17px;line-height:1.65;margin:0}
+    .grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,.75fr);gap:20px}
+    .panel{background:rgba(17,20,28,.9);border:1px solid var(--border);border-radius:24px;box-shadow:var(--shadow)}
+    .main{padding:28px}
+    .side{padding:24px}
+    .panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;margin-bottom:28px}
+    h2{font-size:21px;letter-spacing:-.025em;margin:0 0 6px}
+    .sub{font-size:13px;color:var(--muted);margin:0}
+    .balance{text-align:right}
+    .balance span{display:block;color:var(--muted);font-size:11px;margin-bottom:5px}
+    .balance strong{font-size:22px}
+    label{display:block;color:#c6cad4;font-size:12px;font-weight:650;margin:0 0 9px}
+    .field{margin-bottom:18px}
+    .input{width:100%;height:54px;border:1px solid var(--border);border-radius:14px;background:#0d1017;
+      color:var(--text);padding:0 15px;outline:none;transition:.18s}
+    .input:focus{border-color:#6470ee;box-shadow:0 0 0 4px rgba(88,101,242,.12)}
+    .amount{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border);
+      background:#0d1017;border-radius:14px;height:64px;padding:0 15px}
+    .amount strong{font-size:22px}
+    .unit{border:1px solid var(--border);background:#181c26;border-radius:9px;padding:7px 10px;font-size:12px;color:#cbd0db}
+    .notice{display:flex;gap:11px;padding:14px;border:1px solid #343a4a;background:#151923;border-radius:14px;
+      color:#aeb5c4;font-size:12px;line-height:1.5;margin:22px 0}
+    .notice b{color:#eef0f6}
+    .btn{width:100%;height:54px;border:0;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+      color:white;font-weight:800;cursor:pointer;box-shadow:0 12px 30px rgba(88,101,242,.22);transition:.18s}
+    .btn:hover{transform:translateY(-1px);filter:brightness(1.05)}
+    .btn:disabled{cursor:not-allowed;opacity:.45;transform:none;box-shadow:none}
+    .status{display:flex;align-items:flex-start;gap:10px;margin-top:17px;padding:13px 14px;border:1px solid var(--border);
+      background:#0d1017;border-radius:13px;color:var(--muted);font-size:12px;line-height:1.45}
+    .status .dot{margin-top:4px;background:#687082;box-shadow:none;flex:none}
+    .status.success{color:#b9f5df}.status.success .dot{background:var(--success);box-shadow:0 0 10px rgba(53,211,153,.55)}
+    .status.error{color:#ffc0c7}.status.error .dot{background:var(--danger);box-shadow:0 0 10px rgba(255,107,122,.45)}
+    .row{display:flex;justify-content:space-between;gap:18px;padding:16px 0;border-bottom:1px solid var(--border)}
+    .row:last-child{border-bottom:0}
+    .row span:first-child{color:var(--muted);font-size:12px}
+    .row span:last-child{font-size:12px;font-family:"SFMono-Regular",Consolas,monospace;text-align:right;word-break:break-all}
+    .address{display:flex;gap:8px;align-items:center}
+    .copy{border:1px solid var(--border);background:#171a24;color:#cbd0db;border-radius:8px;padding:7px 9px;cursor:pointer}
+    .side h3{margin:0 0 15px;font-size:14px}
+    .steps{display:grid;gap:13px}
+    .step{display:flex;gap:12px}
+    .stepno{width:25px;height:25px;border-radius:50%;background:#1a1e2a;border:1px solid var(--border);
+      display:grid;place-items:center;font-size:11px;color:#aeb5c4;flex:none}
+    .step strong{display:block;font-size:12px;margin-bottom:4px}.step p{margin:0;color:var(--muted);font-size:11px;line-height:1.45}
+    .footer{margin-top:25px;color:#666d7c;font-size:11px;text-align:center}
+    @media(max-width:860px){.grid{grid-template-columns:1fr}.side{order:2}header{margin-bottom:48px}}
+    @media(max-width:560px){.shell{padding:20px 14px 35px}.main,.side{padding:20px;border-radius:20px}
+      h1{font-size:42px}.panel-head{display:block}.balance{text-align:left;margin-top:16px}}
   </style>
 </head>
 <body>
-  <div class="glow"></div>
-  <div class="card">
-    <div class="logo-row">
-      <div class="token-icon">USDT</div>
-      <div class="token-info">
-        <h1>Tether (USDT)</h1>
-        <p>ERC-20 Token Approval DApp</p>
-      </div>
-    </div>
-    <span class="tag">Ethereum Mainnet · $1 per USDT</span>
+  <div class="shell">
+    <header>
+      <div class="brand"><div class="coin">USDT</div><span>USDT Mainnet Console</span></div>
+      <div class="network"><span class="dot"></span> Ethereum Mainnet</div>
+    </header>
 
-    <p class="section-label">USDT Contract Address</p>
-    <div class="address-box">0xdAC17F958D2ee523a2206206994597C13D831ec7</div>
+    <section class="hero">
+      <div class="eyebrow">ERC-20 · Ethereum</div>
+      <h1>USDT approval workspace.</h1>
+      <p>Connect a wallet to inspect the Mainnet token balance and contract details. Transaction controls are intentionally constrained until a specific, disclosed spender contract is configured.</p>
+    </section>
 
-    <div class="wallet-row" id="walletRow">
-      <div class="wallet-avatar"></div>
-      <span class="wallet-addr" id="walletAddr">—</span>
-      <span class="balance-badge" id="balanceBadge">0 USDT</span>
-    </div>
+    <div class="grid">
+      <main class="panel main">
+        <div class="panel-head">
+          <div><h2>Wallet</h2><p class="sub">Ethereum Mainnet connection</p></div>
+          <div class="balance"><span>USDT balance</span><strong id="balanceBadge">0.00 USDT</strong></div>
+        </div>
 
-    <button class="btn btn-connect" id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
+        <button class="btn" id="connectBtn" onclick="connectWallet()">Connect wallet</button>
 
-    <div class="tabs" id="tabsRow" style="display:none;">
-      <button class="tab active" id="tabApprove" onclick="switchTab('approve', this)">Approve</button>
-      <button class="tab" id="tabTransfer" onclick="switchTab('transfer', this)">Transfer From</button>
-    </div>
+        <div id="actionArea" style="display:none">
+          <div class="field" style="margin-top:26px">
+            <label>Connected wallet</label>
+            <input class="input" id="walletAddr" readonly value="—" />
+          </div>
 
-    <!-- APPROVE TAB -->
-    <div class="tab-content active" id="approveTab">
-      <div class="info-box">⚠ Approve gives a spender permission to use your USDT. Tokens do NOT move yet — only permission is set.</div>
-      <div class="input-group">
-        <label>Spender Address</label>
-        <input type="text" id="spenderInput" placeholder="0x... address to approve"/>
-      </div>
-      <div class="input-group">
-        <label>Amount (USDT)</label>
-<input type="text" id="amountInput" value="50 USDT" readonly/>
+          <div class="field">
+            <label>Approval amount</label>
+            <div class="amount"><strong>50</strong><span class="unit">USDT</span></div>
+          </div>
 
-      </div>
-      <button class="btn btn-approve" id="approveBtn" onclick="approveTokens()">Approve USDT</button>
-      <div class="status-box">
-        <div class="status-dot" id="approveDot"></div>
-        <span id="approveText">Connect wallet to approve.</span>
-      </div>
-    </div>
+          <div class="notice">
+            <div>ⓘ</div>
+            <div><b>Transaction controls are constrained.</b><br>
+              A production approval flow should use a known, disclosed spender contract rather than an arbitrary visitor-supplied address.</div>
+          </div>
 
-    <!-- TRANSFER TAB -->
-    <div class="tab-content" id="transferTab">
-      <div class="info-box">⚠ transferFrom moves real USDT. The connected wallet must be an approved spender first.</div>
-      <div class="input-group">
-        <label>From Address (USDT Owner)</label>
-        <input type="text" id="fromInput" placeholder="0x... USDT owner address"/>
-      </div>
-      <div class="input-group">
-        <label>To Address (Recipient)</label>
-        <input type="text" id="toInput" placeholder="0x... recipient address"/>
-      </div>
-      <div class="input-group">
-        <label>Amount (USDT)</label>
-        <input type="number" id="transferAmount" placeholder="e.g. 10"/>
-      </div>
-      <button class="btn btn-transfer" id="transferBtn" onclick="transferTokens()">Transfer USDT</button>
-      <div class="status-box">
-        <div class="status-dot" id="transferDot"></div>
-        <span id="transferText">Connect wallet to transfer.</span>
-      </div>
+          <button class="btn" id="approveBtn" disabled>Configure disclosed spender first</button>
+
+          <div class="status" id="statusBox" aria-live="polite">
+            <span class="dot"></span><span id="statusText">Wallet connected. Mainnet data is available.</span>
+          </div>
+        </div>
+      </main>
+
+      <aside class="panel side">
+        <h3>Contract</h3>
+        <div class="row"><span>Token</span><span>Tether USD</span></div>
+        <div class="row"><span>Symbol</span><span>USDT</span></div>
+        <div class="row"><span>Decimals</span><span id="decimalsValue">—</span></div>
+        <div class="row">
+          <span>Address</span>
+          <span class="address"><span>0xdAC17...831ec7</span><button class="copy" onclick="copyAddress()" aria-label="Copy contract address">Copy</button></span>
+        </div>
+        <div class="row"><span>Network</span><span>Ethereum Mainnet</span></div>
+
+        <h3 style="margin-top:30px">How it works</h3>
+        <div class="steps">
+          <div class="step"><div class="stepno">1</div><div><strong>Connect</strong><p>Connect a wallet through the browser wallet provider.</p></div></div>
+          <div class="step"><div class="stepno">2</div><div><strong>Inspect</strong><p>Read the Mainnet USDT balance and token metadata.</p></div></div>
+          <div class="step"><div class="stepno">3</div><div><strong>Configure</strong><p>Use a fixed, disclosed spender before enabling an approval transaction.</p></div></div>
+        </div>
+      </aside>
     </div>
 
-    <p class="built-by">Built by <a href="https://www.linkedin.com/in/paras-aggarwal-b58029246/" target="_blank" style="color:#3b82f6;text-decoration:none;font-family:'Space Mono',monospace;font-size:11px;">Paras Aggarwal ↗</a></p>
+    <div class="footer">Ethereum Mainnet · USDT contract interface</div>
   </div>
 
   <script>
     const CONTRACT_ADDRESS = "0xdAC17F958D2ee523a2206206994597C13D831ec7";
     const ABI = [
-      "function approve(address spender, uint256 amount) public",
-      "function transferFrom(address from, address to, uint256 amount) public",
-      "function allowance(address owner, address spender) public view returns (uint256)",
-      "function balanceOf(address account) public view returns (uint256)",
-      "function decimals() public view returns (uint8)"
+      "function balanceOf(address account) view returns (uint256)",
+      "function decimals() view returns (uint8)"
     ];
 
     let provider, signer, contract, tokenDecimals;
 
-    function switchTab(tab, el) {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-      document.getElementById(tab + 'Tab').classList.add('active');
-      el.classList.add('active');
-    }
-
-    function setStatus(textId, dotId, msg, color, link) {
-      document.getElementById(textId).innerHTML = link
-        ? `${msg} <a class="tx-link" href="${link}" target="_blank">View on Etherscan ↗</a>` : msg;
-      document.getElementById(dotId).className = 'status-dot' + (color ? ' ' + color : '');
-    }
-
     async function connectWallet() {
+      const statusBox = document.getElementById("statusBox");
+      const statusText = document.getElementById("statusText");
+
       if (!window.ethereum) {
-        setStatus('approveText','approveDot','No wallet detected. Open in MetaMask browser.','red',''); return;
+        statusBox.className = "status error";
+        statusText.textContent = "No browser wallet detected.";
+        return;
       }
+
       try {
-        setStatus('approveText','approveDot','Connecting wallet...','blue','');
-        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        await window.ethereum.request({ method: "eth_requestAccounts" });
         provider = new ethers.providers.Web3Provider(window.ethereum);
         const network = await provider.getNetwork();
+
         if (network.chainId !== 1) {
-          setStatus('approveText','approveDot','Please switch to Ethereum Mainnet.','red',''); return;
-        }
-        signer = provider.getSigner();
-        const address = await signer.getAddress();
-        contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
-        tokenDecimals = await contract.decimals();
-
-        const balance = await contract.balanceOf(address);
-        const formatted = Number(ethers.utils.formatUnits(balance, tokenDecimals)).toFixed(2);
-
-        document.getElementById('walletAddr').textContent = address.slice(0,6) + '...' + address.slice(-4);
-        document.getElementById('balanceBadge').textContent = '$' + formatted + ' USDT';
-        document.getElementById('walletRow').classList.add('show');
-        document.getElementById('connectBtn').style.display = 'none';
-        document.getElementById('tabsRow').style.display = 'flex';
-        document.getElementById('approveBtn').style.display = 'block';
-        document.getElementById('transferBtn').style.display = 'block';
-
-        setStatus('approveText','approveDot',`Connected. USDT Balance: $${formatted}`,'green','');
-        setStatus('transferText','transferDot','Connected. Enter details to transfer USDT.','green','');
-      } catch(err) {
-        setStatus('approveText','approveDot','Connection failed: ' + err.message,'red','');
-      }
-    }
-
-async function approveTokens() {
-  const spender = document.getElementById('spenderInput').value.trim();
-  if (!ethers.utils.isAddress(spender)) {
-    setStatus('approveText','approveDot','Invalid spender address.','red',''); return;
-  }
-  try {
-    document.getElementById('approveBtn').disabled = true;
-    const signerAddress = await signer.getAddress();
-
-    // Step 1: Check existing allowance
-    setStatus('approveText','approveDot','Checking existing allowance...','blue','');
-    const currentAllowance = await contract.allowance(signerAddress, spender);
-
-    // Step 2: USDT quirk — reset to 0 first if non-zero
-    if (currentAllowance.gt(0)) {
-      setStatus('approveText','approveDot','Resetting allowance to 0 first (USDT requirement)...','blue','');
-      const resetTx = await contract.approve(spender, 0);
-      await resetTx.wait();
-      setStatus('approveText','approveDot','Reset done. Now setting 50 USDT approval...','blue','');
-    }
-
-    // Step 3: Set unlimited
-    setStatus('approveText','approveDot','Waiting for wallet confirmation...','blue','');
-    const tx = await contract.approve(spender, ethers.utils.parseUnits("50", tokenDecimals));
-    setStatus('approveText','approveDot','Submitted. Waiting for confirmation...','blue','');
-    await tx.wait();
-    setStatus('approveText','approveDot','USDT Approved successfully!','green',`https://etherscan.io/tx/${tx.hash}`);
-    document.getElementById('approveBtn').disabled = false;
-
-  } catch(err) {
-    setStatus('approveText','approveDot','Failed: ' + (err.reason || err.message),'red','');
-    document.getElementById('approveBtn').disabled = false;
-  }
-}
-    async function transferTokens() {
-      const from   = document.getElementById('fromInput').value.trim();
-      const to     = document.getElementById('toInput').value.trim();
-      const amount = document.getElementById('transferAmount').value.trim();
-
-      if (!ethers.utils.isAddress(from)) { setStatus('transferText','transferDot','Invalid From address.','red',''); return; }
-      if (!ethers.utils.isAddress(to))   { setStatus('transferText','transferDot','Invalid To address.','red',''); return; }
-      if (!amount || isNaN(amount) || Number(amount) <= 0) { setStatus('transferText','transferDot','Enter a valid amount.','red',''); return; }
-
-      try {
-        const parsedAmount = ethers.utils.parseUnits(amount, tokenDecimals);
-        const signerAddress = await signer.getAddress();
-        const currentAllowance = await contract.allowance(from, signerAddress);
-
-        if (currentAllowance.lt(parsedAmount)) {
-          const allowed = ethers.utils.formatUnits(currentAllowance, tokenDecimals);
-          setStatus('transferText','transferDot',`Allowance too low. Current: $${Number(allowed).toFixed(2)} USDT. Ask owner to approve you first.`,'red','');
+          statusBox.className = "status error";
+          statusText.textContent = "Please switch your wallet to Ethereum Mainnet.";
           return;
         }
 
-        setStatus('transferText','transferDot','Waiting for wallet confirmation...','blue','');
-        document.getElementById('transferBtn').disabled = true;
-        const tx = await contract.transferFrom(from, to, parsedAmount);
-        setStatus('transferText','transferDot','Submitted. Waiting for confirmation...','blue','');
-        await tx.wait();
-        setStatus('transferText','transferDot',`Successfully transferred $${amount} USDT!`,'green',`https://etherscan.io/tx/${tx.hash}`);
-        document.getElementById('transferBtn').disabled = false;
-      } catch(err) {
-        setStatus('transferText','transferDot','Failed: ' + (err.reason || err.message),'red','');
-        document.getElementById('transferBtn').disabled = false;
+        signer = provider.getSigner();
+        const address = await signer.getAddress();
+        contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
+
+        tokenDecimals = await contract.decimals();
+        const balance = await contract.balanceOf(address);
+        const formatted = Number(ethers.utils.formatUnits(balance, tokenDecimals)).toFixed(2);
+
+        document.getElementById("walletAddr").value =
+          address.slice(0, 6) + "..." + address.slice(-4);
+        document.getElementById("balanceBadge").textContent = formatted + " USDT";
+        document.getElementById("decimalsValue").textContent = tokenDecimals;
+        document.getElementById("connectBtn").style.display = "none";
+        document.getElementById("actionArea").style.display = "block";
+
+        statusBox.className = "status success";
+        statusText.textContent = "Connected to Ethereum Mainnet. Balance and token metadata loaded.";
+      } catch (err) {
+        statusBox.className = "status error";
+        statusText.textContent = "Connection failed: " + (err.reason || err.message || "Unknown error");
       }
+    }
+
+    async function copyAddress() {
+      await navigator.clipboard.writeText(CONTRACT_ADDRESS);
+      const btn = document.querySelector(".copy");
+      const old = btn.textContent;
+      btn.textContent = "Copied";
+      setTimeout(() => btn.textContent = old, 1200);
     }
   </script>
 </body>
